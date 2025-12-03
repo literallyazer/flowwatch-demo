@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowWatch Test - SaaS Signup Flow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            max-width: 600px;
+            width: 100%;
+            padding: 50px;
+            position: relative;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo h1 {
+            color: #667eea;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .logo p {
+            color: #888;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .progress-container {
+            margin-bottom: 40px;
+        }
+        
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        
+        .progress-step::before {
+            content: attr(data-step);
+            display: block;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 10px;
+            background: #e0e0e0;
+            border-radius: 50%;
+            line-height: 40px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .progress-step.active::before {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .progress-step.completed::before {
+            background: #10b981;
+            color: white;
+            content: "✓";
+        }
+        
+        .progress-step span {
+            font-size: 13px;
+            color: #888;
+            font-weight: 500;
+        }
+        
+        .progress-step.active span {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .progress-bar {
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: #667eea;
+            transition: width 0.3s;
+            width: 0%;
+        }
+        
+        .step {
+            display: none;
+        }
+        
+        .step.active {
+            display: block;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        
+        .step-description {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .radio-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .radio-option {
+            position: relative;
+        }
+        
+        .radio-option input {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .radio-option label {
+            display: block;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            margin: 0;
+        }
+        
+        .radio-option input:checked + label {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .plan-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .plan-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .plan-card input {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .plan-card input:checked ~ .plan-content {
+            border-left: 4px solid #667eea;
+            padding-left: 16px;
+        }
+        
+        .plan-card input:checked ~ .checkmark {
+            display: block;
+        }
+        
+        .checkmark {
+            display: none;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 30px;
+            height: 30px;
+            background: #10b981;
+            border-radius: 50%;
+            color: white;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+        }
+        
+        .plan-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .plan-price {
+            font-size: 28px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .plan-price span {
+            font-size: 14px;
+            color: #888;
+            font-weight: 400;
+        }
+        
+        .plan-features {
+            list-style: none;
+            margin-top: 15px;
+        }
+        
+        .plan-features li {
+            padding: 6px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .plan-features li::before {
+            content: "✓";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 35px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .success-message {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #10b981;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            animation: scaleIn 0.5s;
+        }
+        
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+        
+        .success-message h2 {
+            color: #10b981;
+            margin-bottom: 15px;
+        }
+        
+        .success-message p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .error {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .error.show {
+            display: block;
+        }
+        
+        .help-text {
+            font-size: 13px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .summary-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .summary-item:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 16px;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .summary-label {
+            color: #666;
+        }
+        
+        .summary-value {
+            color: #333;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>⚡ FlowSaaS</h1>
+            <p>Start your free trial today</p>
+        </div>
+        
+        <!-- Progress Indicator -->
+        <div class="progress-container">
+            <div class="progress-steps">
+                <div class="progress-step active" data-step="1" id="progress-1">
+                    <span>Account</span>
+                </div>
+                <div class="progress-step" data-step="2" id="progress-2">
+                    <span>Company</span>
+                </div>
+                <div class="progress-step" data-step="3" id="progress-3">
+                    <span>Use Case</span>
+                </div>
+                <div class="progress-step" data-step="4" id="progress-4">
+                    <span>Plan</span>
+                </div>
+                <div class="progress-step" data-step="5" id="progress-5">
+                    <span>Payment</span>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-bar-fill" id="progress-fill"></div>
+            </div>
+        </div>
+        
+        <!-- Step 1: Account -->
+        <div class="step active" id="step-1">
+            <h2>Create your account</h2>
+            <p class="step-description">Let's get started with your basic information</p>
+            
+            <div class="form-group">
+                <label for="full-name">Full Name *</label>
+                <input type="text" id="full-name" placeholder="John Doe" required>
+                <div class="error" id="name-error">Please enter your full name</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Work Email *</label>
+                <input type="email" id="email" placeholder="john@company.com" required>
+                <div class="error" id="email-error">Please enter a valid email address</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password *</label>
+                <input type="password" id="password" placeholder="Min. 8 characters" required>
+                <p class="help-text">Must include uppercase, lowercase, and number</p>
+                <div class="error" id="password-error">Password must be at least 8 characters</div>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="nextStep(1)">Continue →</button>
+            </div>
+        </div>
+        
+        <!-- Step 2: Company Info -->
+        <div class="step" id="step-2">
+            <h2>Tell us about your company</h2>
+            <p class="step-description">This helps us personalize your experience</p>
+            
+            <div class="form-group">
+                <label for="company">Company Name *</label>
+                <input type="text" id="company" placeholder="Acme Inc." required>
+                <div class="error" id="company-error">Please enter your company name</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="company-size">Company Size *</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="size-1" name="company-size" value="1-10">
+                        <label for="size-1">1-10</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="size-2" name="company-size" value="11-50">
+                        <label for="size-2">11-50</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="size-3" name="company-size" value="51-200">
+                        <label for="size-3">51-200</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="size-4" name="company-size" value="201+">
+                        <label for="size-4">201+</label>
+                    </div>
+                </div>
+                <div class="error" id="size-error">Please select your company size</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="role">Your Role *</label>
+                <select id="role" required>
+                    <option value="">Select your role...</option>
+                    <option value="founder">Founder / CEO</option>
+                    <option value="product">Product Manager</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="developer">Developer</option>
+                    <option value="other">Other</option>
+                </select>
+                <div class="error" id="role-error">Please select your role</div>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-secondary" onclick="prevStep(2)">← Back</button>
+                <button class="btn-primary" onclick="nextStep(2)">Continue →</button>
+            </div>
+        </div>
+        
+        <!-- Step 3: Use Case -->
+        <div class="step" id="step-3">
+            <h2>What's your primary goal?</h2>
+            <p class="step-description">We'll customize your dashboard based on this</p>
+            
+            <div class="form-group">
+                <label>I want to... *</label>
+                <div class="radio-group" style="grid-template-columns: 1fr;">
+                    <div class="radio-option">
+                        <input type="radio" id="goal-1" name="goal" value="analytics">
+                        <label for="goal-1">
+                            <strong>Track user behavior</strong><br>
+                            <small style="color: #888;">Analytics and funnel tracking</small>
+                        </label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="goal-2" name="goal" value="conversion">
+                        <label for="goal-2">
+                            <strong>Optimize conversions</strong><br>
+                            <small style="color: #888;">A/B testing and experiments</small>
+                        </label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="goal-3" name="goal" value="retention">
+                        <label for="goal-3">
+                            <strong>Improve retention</strong><br>
+                            <small style="color: #888;">User engagement and cohorts</small>
+                        </label>
+                    </div>
+                </div>
+                <div class="error" id="goal-error">Please select your primary goal</div>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-secondary" onclick="prevStep(3)">← Back</button>
+                <button class="btn-primary" onclick="nextStep(3)">Continue →</button>
+            </div>
+        </div>
+        
+        <!-- Step 4: Plan Selection -->
+        <div class="step" id="step-4">
+            <h2>Choose your plan</h2>
+            <p class="step-description">14-day free trial, cancel anytime</p>
+            
+            <label class="plan-card">
+                <input type="radio" name="plan" value="starter" id="plan-starter">
+                <div class="checkmark">✓</div>
+                <div class="plan-content">
+                    <div class="plan-name">Starter</div>
+                    <div class="plan-price">$29<span>/month</span></div>
+                    <ul class="plan-features">
+                        <li>Up to 10,000 events/month</li>
+                        <li>3 team members</li>
+                        <li>Email support</li>
+                        <li>7-day data retention</li>
+                    </ul>
+                </div>
+            </label>
+            
+            <label class="plan-card">
+                <input type="radio" name="plan" value="pro" id="plan-pro" checked>
+                <div class="checkmark">✓</div>
+                <div class="plan-content">
+                    <div class="plan-name">Professional 🔥</div>
+                    <div class="plan-price">$99<span>/month</span></div>
+                    <ul class="plan-features">
+                        <li>Up to 100,000 events/month</li>
+                        <li>10 team members</li>
+                        <li>Priority support</li>
+                        <li>90-day data retention</li>
+                        <li>Custom dashboards</li>
+                    </ul>
+                </div>
+            </label>
+            
+            <label class="plan-card">
+                <input type="radio" name="plan" value="enterprise" id="plan-enterprise">
+                <div class="checkmark">✓</div>
+                <div class="plan-content">
+                    <div class="plan-name">Enterprise</div>
+                    <div class="plan-price">Custom</div>
+                    <ul class="plan-features">
+                        <li>Unlimited events</li>
+                        <li>Unlimited team members</li>
+                        <li>Dedicated support</li>
+                        <li>Unlimited data retention</li>
+                        <li>SSO & advanced security</li>
+                        <li>Custom integrations</li>
+                    </ul>
+                </div>
+            </label>
+            
+            <div class="button-group">
+                <button class="btn-secondary" onclick="prevStep(4)">← Back</button>
+                <button class="btn-primary" onclick="nextStep(4)">Continue →</button>
+            </div>
+        </div>
+        
+        <!-- Step 5: Payment -->
+        <div class="step" id="step-5">
+            <h2>Payment details</h2>
+            <p class="step-description">Your trial starts today, first charge in 14 days</p>
+            
+            <div class="summary-box">
+                <div class="summary-item">
+                    <span class="summary-label">Plan</span>
+                    <span class="summary-value" id="summary-plan">Professional</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Price</span>
+                    <span class="summary-value" id="summary-price">$99/month</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Due today</span>
+                    <span class="summary-value">$0.00</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="card-number">Card Number *</label>
+                <input type="text" id="card-number" placeholder="4242 4242 4242 4242" maxlength="19">
+                <div class="error" id="card-error">Please enter a valid card number</div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label for="expiry">Expiry *</label>
+                    <input type="text" id="expiry" placeholder="MM/YY" maxlength="5">
+                </div>
+                <div class="form-group">
+                    <label for="cvv">CVV *</label>
+                    <input type="text" id="cvv" placeholder="123" maxlength="4">
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-secondary" onclick="prevStep(5)">← Back</button>
+                <button class="btn-primary" onclick="submitForm()">Start Free Trial 🎉</button>
+            </div>
+        </div>
+        
+        <!-- Success Message -->
+        <div class="step" id="step-success">
+            <div class="success-message">
+                <div class="success-icon">✓</div>
+                <h2>Welcome aboard!</h2>
+                <p>Your account has been created successfully.<br>Check your email for setup instructions.</p>
+                <p style="margin-top: 20px; color: #888; font-size: 13px;">
+                    Trial ends: <strong>December 16, 2025</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- FlowWatch Tracking Snippet -->
+    <script src="https://flowwatch.tech/flow.js" defer data-key="fw_v3tepl3iod8" data-endpoint="https://flowwatch.tech/api/events"></script>
+
+    <!-- Form Logic -->
+    <script>
+        let currentStepNum = 1;
+        const totalSteps = 5;
+
+        function initTracking() {
+            if (window.FlowWatch) {
+                console.log('✅ FlowWatch loaded, tracking account_info step');
+                window.FlowWatch.enterStep('account_info');
+            } else {
+                console.log('⏳ Waiting for FlowWatch...');
+                setTimeout(initTracking, 100);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', initTracking);
+
+        function updateProgress() {
+            const percentage = (currentStepNum / totalSteps) * 100;
+            document.getElementById('progress-fill').style.width = percentage + '%';
+            
+            // Update progress indicators
+            for (let i = 1; i <= totalSteps; i++) {
+                const indicator = document.getElementById(`progress-${i}`);
+                indicator.classList.remove('active', 'completed');
+                
+                if (i < currentStepNum) {
+                    indicator.classList.add('completed');
+                } else if (i === currentStepNum) {
+                    indicator.classList.add('active');
+                }
+            }
+        }
+
+        function validateStep(step) {
+            let valid = true;
+            clearErrors();
+            
+            if (step === 1) {
+                const name = document.getElementById('full-name').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+                
+                if (!name || name.length < 2) {
+                    showError('name-error');
+                    valid = false;
+                }
+                
+                if (!email || !email.includes('@') || !email.includes('.')) {
+                    showError('email-error');
+                    valid = false;
+                }
+                
+                if (!password || password.length < 8) {
+                    showError('password-error');
+                    valid = false;
+                }
+            } else if (step === 2) {
+                const company = document.getElementById('company').value.trim();
+                const size = document.querySelector('input[name="company-size"]:checked');
+                const role = document.getElementById('role').value;
+                
+                if (!company) {
+                    showError('company-error');
+                    valid = false;
+                }
+                
+                if (!size) {
+                    showError('size-error');
+                    valid = false;
+                }
+                
+                if (!role) {
+                    showError('role-error');
+                    valid = false;
+                }
+            } else if (step === 3) {
+                const goal = document.querySelector('input[name="goal"]:checked');
+                if (!goal) {
+                    showError('goal-error');
+                    valid = false;
+                }
+            } else if (step === 5) {
+                const card = document.getElementById('card-number').value.replace(/\s/g, '');
+                if (!card || card.length < 15) {
+                    showError('card-error');
+                    valid = false;
+                }
+            }
+            
+            return valid;
+        }
+
+        function showError(errorId) {
+            document.getElementById(errorId).classList.add('show');
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.error').forEach(el => el.classList.remove('show'));
+        }
+
+        function nextStep(step) {
+            if (!validateStep(step)) {
+                if (window.FlowWatch) {
+                    window.FlowWatch.track('validation_error', getStepName(step));
+                }
+                return;
+            }
+
+            // Leave current step
+            if (window.FlowWatch) {
+                window.FlowWatch.leaveStep(getStepName(step));
+            }
+
+            // Update UI
+            document.getElementById(`step-${step}`).classList.remove('active');
+            currentStepNum = step + 1;
+            document.getElementById(`step-${currentStepNum}`).classList.add('active');
+            updateProgress();
+
+            // Enter next step
+            if (window.FlowWatch) {
+                window.FlowWatch.enterStep(getStepName(currentStepNum));
+            }
+
+            // Update summary for payment step
+            if (currentStepNum === 5) {
+                updateSummary();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function prevStep(step) {
+            // Leave current step
+            if (window.FlowWatch) {
+                window.FlowWatch.leaveStep(getStepName(step));
+            }
+
+            // Update UI
+            document.getElementById(`step-${step}`).classList.remove('active');
+            currentStepNum = step - 1;
+            document.getElementById(`step-${currentStepNum}`).classList.add('active');
+            updateProgress();
+
+            // Enter previous step
+            if (window.FlowWatch) {
+                window.FlowWatch.enterStep(getStepName(currentStepNum));
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function getStepName(stepNum) {
+            const names = ['', 'account_info', 'company_info', 'use_case', 'plan_selection', 'payment_details'];
+            return names[stepNum];
+        }
+
+        function updateSummary() {
+            const selectedPlan = document.querySelector('input[name="plan"]:checked');
+            if (selectedPlan) {
+                const planNames = { starter: 'Starter', pro: 'Professional', enterprise: 'Enterprise' };
+                const planPrices = { starter: '$29/month', pro: '$99/month', enterprise: 'Custom' };
+                
+                document.getElementById('summary-plan').textContent = planNames[selectedPlan.value];
+                document.getElementById('summary-price').textContent = planPrices[selectedPlan.value];
+            }
+        }
+
+        function submitForm() {
+            if (!validateStep(5)) {
+                if (window.FlowWatch) {
+                    window.FlowWatch.track('validation_error', 'payment_details');
+                }
+                return;
+            }
+
+            // Leave payment step
+            if (window.FlowWatch) {
+                window.FlowWatch.leaveStep('payment_details');
+            }
+
+            // Show success
+            document.getElementById('step-5').classList.remove('active');
+            document.getElementById('step-success').classList.add('active');
+            
+            // Update progress
+            currentStepNum = 6;
+            document.getElementById('progress-fill').style.width = '100%';
+            document.querySelectorAll('.progress-step').forEach(el => {
+                el.classList.remove('active');
+                el.classList.add('completed');
+            });
+
+            // Track conversion
+            if (window.FlowWatch) {
+                const plan = document.querySelector('input[name="plan"]:checked').value;
+                const goal = document.querySelector('input[name="goal"]:checked').value;
+                
+                window.FlowWatch.track('signup_completed', 'payment_details', {
+                    plan: plan,
+                    goal: goal,
+                    company_size: document.querySelector('input[name="company-size"]:checked')?.value
+                });
+            }
+        }
+
+        // Format card number
+        document.getElementById('card-number')?.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formatted;
+        });
+
+        // Format expiry
+        document.getElementById('expiry')?.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.slice(0, 2) + '/' + value.slice(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        // Track drop-off on exit
+        window.addEventListener('beforeunload', function(e) {
+            const currentStep = document.querySelector('.step.active:not(#step-success)');
+            if (currentStep && window.FlowWatch) {
+                const stepId = currentStep.id.replace('step-', '');
+                if (stepId !== 'success') {
+                    window.FlowWatch.trackDropOff(getStepName(parseInt(stepId)), 'page_exit');
+                }
+            }
+        });
+
+        // Initialize progress
+        updateProgress();
+    </script>
+</body>
+</html>
